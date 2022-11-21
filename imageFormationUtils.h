@@ -60,3 +60,4 @@ int main(int argc, char* argv[])
 }
 */
 void computeTrans(float gama, float beta, float alpha, float T_x, float T_y, float T_z, float *result);
+void matMul(float *A, float *B, float *result) ;

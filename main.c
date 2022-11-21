@@ -1,45 +1,8 @@
 #include "imageFormationUtils.h"
 #include "math.h"
+#include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-struct camera {
-    float* rotation_matrix  ;
-    float* translation_matrix  ;
-    float focal ;
-}  ;
-
-
-
-
-float* computeRigidTransformationMatrix(struct camera* cam) {
-    //calculer la matrice selon la formule des slide
-}
-//Note that pointCloud* refer to an array of point3D
-//Nv : number of point in the point cloud
-void applyRigidYTransformation(struct camera* cam, struct point3d* pointCloud, int N_v) {
-    //Pour tout les point, appliquer...
-    //Stocker le resultat dans un nouveau nuage de points
-
-    for (int i = 0 ;  i < N_v ; i++ ) {
-        //appliquer la matrix rigid a chaque point (utiliser multi matrix) + stocker le resultat..
-
-    }
-
-
-}
-/**
-FILE *generateImage(char *name, int* matrix) {
-    FILE* ifp = fopen(name, "w");
-    if (ifp == NULL){
-        printf("Error opening the file\n");
-        exit(1);
-    }
-    //ajouter la matrice + respecter le format
-
-    return ifp;
-}
-**/
 
 struct camera* initializeCamera(float* rotation_matrix, float* translation_matrix, int focal) {
     struct camera* cam = malloc(sizeof(struct camera)) ;
@@ -50,33 +13,46 @@ struct camera* initializeCamera(float* rotation_matrix, float* translation_matri
     return cam ;
 }
 
-float* initializeRotationMatrix() {
-    float* rotation_matrix = (float*) malloc(16*sizeof(float)) ;
-    rotation_matrix = (float[16]) {0, 0, 0, 0,
-                                    0, 0, 0, 0,
-                                    0,  0, 0, 0,
-                                    0, 0, 0, 1 } ;
-    return rotation_matrix ;
+/**
+ *Compute [ Xp', Yp', 0, 1 + Zp' /f] the projected point on a 2D plan
+ */
+float* function2(float* projectionMatrix, struct point3d point) {
+    float coordinates[4] = { point.x, point.y, point.z, 1 } ;
+    float* result  ;
+    matMul(projectionMatrix, coordinates, result) ;
+    return result ;
 }
 
-float *initializeTranslationMatrix(float Tx, float Ty, float Tz) {
-    float* translation = (float*) malloc(16*sizeof(float)) ;
-    translation = (float[16]) {1, 0, 0, Tx,
-                                   0, 1, 0, Ty,
-                                   0,  0, 1, Tz,
-                                   0, 0, 0, 1 } ;
-    return translation ;
+/**
+ * Compute the X and Y coordinates on the image of the projected point
+ */
+float* function3(float* point, float focal) {
+    float* projectedPoint = malloc (sizeof (float )* 2) ;
+    projectedPoint[0] = point[0] / (1+ point[2] / focal ) ;
+    projectedPoint[1] = point[1] / (1+ point[2] / focal) ;
+    return projectedPoint ;
 }
 
-
-float *initializeRigidTransformationMatrix(float* rotationMatrix, float* translationMatrix) {
-    float* rigid = (float*) malloc(16*sizeof(float)) ;
-    rigid = (float[16]) {rotationMatrix[0], rotationMatrix[1], rotationMatrix[2], translationMatrix[2],
-                                   rotationMatrix[3], rotationMatrix[4], rotationMatrix[5], translationMatrix[5],
-                                   rotationMatrix[6], rotationMatrix[7], rotationMatrix[8], translationMatrix[8],
-                                   0,                 0,                 0,                 1 } ;
-    return rotationMatrix ;
+/**
+ *
+ * Compute pixel coordinated in the final array
+ */
+float* function5(float* point, float alpha_u, float alpha_v, float u0, float v0){
+    float* projectedPoint = malloc(sizeof (float) *2) ;
+    projectedPoint[0] = point[0] / alpha_u + u0 ;
+    projectedPoint[1] = point[1] / alpha_v +v0 ;
+    return projectedPoint ;
 }
+
+/**
+ * Project a point such that his new origin is the camera
+ */
+float* function1(float* point, float* rigid_matrix) {
+    float* newPoint = malloc(4 * sizeof (float)) ;
+    matMul(rigid_matrix, point, newPoint ) ; //not sur it work
+    return newPoint ;
+}
+
 
 
 int main(int argc, char* argv[]) {
@@ -84,24 +60,11 @@ int main(int argc, char* argv[]) {
     struct point3d *pointCloud;
     int N_v = 0;
     pointCloud = readOff(argv[1], &N_v);
-    /**Center the origin of the cloud at the barycentre**/
 
+    /**Center the origin of the cloud at the barycentre**/
     centerThePCL(pointCloud, N_v);
 
-    /***Initializa a camera**/
-    float* rotation_matrix = initializeRotationMatrix() ;
-    float* translation_matrix = initializeTranslationMatrix(0,0,0) ;
-    float focal = 1 ;
-    struct camera* cam = initializeCamera(rotation_matrix, translation_matrix, focal) ;
-
     /**Apply a rigid transformation***/
-    float* rigid_transformation_matrix = initializeRigidTransformationMatrix(rotation_matrix,translation_matrix) ;
-
-    //For all point in the image, tranform
-    for (int 111*Project**/
-
     /**Tranform in u'v
-
      /**Create file**/
-
 }
